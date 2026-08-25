@@ -33,6 +33,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.musheer360.swiftslate.ui.CommandsScreen
 import com.musheer360.swiftslate.ui.DashboardScreen
 import com.musheer360.swiftslate.ui.KeysScreen
+import com.musheer360.swiftslate.ui.LocalModelScreen
 import com.musheer360.swiftslate.ui.SettingsScreen
 import com.musheer360.swiftslate.ui.theme.SwiftSlateTheme
 
@@ -40,6 +41,7 @@ enum class Tab(@param:StringRes val titleRes: Int, val icon: ImageVector) {
     Dashboard(R.string.dashboard_title, Icons.Default.Home),
     Keys(R.string.keys_title, Icons.Default.Lock),
     Commands(R.string.commands_title, Icons.AutoMirrored.Filled.List),
+    LocalModel(R.string.settings_model_title, Icons.Default.Settings),
     Settings(R.string.settings_title, Icons.Default.Settings)
 }
 
@@ -61,10 +63,9 @@ fun SwiftSlateMainScreen(vm: SwiftSlateViewModel = viewModel()) {
     val haptic = LocalHapticFeedback.current
     var selectedTab by rememberSaveable { mutableStateOf(Tab.Dashboard) }
 
-    // Request notification permission on first launch (Android 13+)
     val permissionLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission()
-    ) { _ -> // Result not needed — we just need to prompt once
+    ) { _ ->
         context.getSharedPreferences("settings", Context.MODE_PRIVATE)
             .edit().putBoolean("notification_permission_requested", true).apply()
     }
@@ -78,8 +79,6 @@ fun SwiftSlateMainScreen(vm: SwiftSlateViewModel = viewModel()) {
                     permissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
                 }
             } catch (_: Exception) {
-                // A corrupted pref must not crash this activity — it shares the process with
-                // the accessibility service (#125).
             }
         }
     }
@@ -124,6 +123,7 @@ fun SwiftSlateMainScreen(vm: SwiftSlateViewModel = viewModel()) {
                         Tab.Dashboard -> DashboardScreen(vm.keyManager, vm.commandManager, vm.statsManager)
                         Tab.Keys -> KeysScreen(vm.keyManager, vm.prefs)
                         Tab.Commands -> CommandsScreen(vm.commandManager)
+                        Tab.LocalModel -> LocalModelScreen(vm.prefs)
                         Tab.Settings -> SettingsScreen(vm.commandManager, vm.prefs, vm.keyManager)
                     }
                 }
