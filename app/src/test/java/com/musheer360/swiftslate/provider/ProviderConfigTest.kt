@@ -15,6 +15,7 @@ class ProviderConfigTest {
         assertSame(GeminiConfig, Providers.forType(ProviderType.GEMINI))
         assertSame(GroqConfig, Providers.forType(ProviderType.GROQ))
         assertSame(CustomConfig, Providers.forType(ProviderType.CUSTOM))
+        assertSame(LocalConfig, Providers.forType(ProviderType.LOCAL))
     }
 
     @Test
@@ -28,6 +29,7 @@ class ProviderConfigTest {
         assertEquals(Transport.GEMINI_NATIVE, GeminiConfig.transport)
         assertEquals(Transport.OPENAI_COMPAT, GroqConfig.transport)
         assertEquals(Transport.OPENAI_COMPAT, CustomConfig.transport)
+        assertEquals(Transport.LOCAL, LocalConfig.transport)
     }
 
     @Test
@@ -35,9 +37,11 @@ class ProviderConfigTest {
         assertEquals(PrefKeys.GEMINI_MODEL, GeminiConfig.modelPrefKey)
         assertEquals(PrefKeys.GROQ_MODEL, GroqConfig.modelPrefKey)
         assertEquals(PrefKeys.CUSTOM_MODEL, CustomConfig.modelPrefKey)
+        assertEquals(PrefKeys.LOCAL_MODEL_PATH, LocalConfig.modelPrefKey)
         assertEquals(GeminiModels.DEFAULT, GeminiConfig.defaultModel)
         assertEquals(GroqModels.DEFAULT, GroqConfig.defaultModel)
         assertEquals("", CustomConfig.defaultModel)
+        assertEquals("", LocalConfig.defaultModel)
     }
 
     @Test
@@ -45,6 +49,7 @@ class ProviderConfigTest {
         assertEquals(GroqConfig.ENDPOINT, GroqConfig.resolveEndpoint("ignored"))
         assertEquals("", GeminiConfig.resolveEndpoint("ignored"))
         assertEquals("https://my.endpoint/v1", CustomConfig.resolveEndpoint("https://my.endpoint/v1"))
+        assertEquals("", LocalConfig.resolveEndpoint("ignored"))
     }
 
     @Test
@@ -53,22 +58,32 @@ class ProviderConfigTest {
         assertFalse(GroqConfig.useJsonObjectMode(false))
         assertFalse(GeminiConfig.useJsonObjectMode(true))
         assertFalse(CustomConfig.useJsonObjectMode(true))
+        assertFalse(LocalConfig.useJsonObjectMode(true))
     }
 
     @Test
-    fun isConfigured_only_custom_requires_both() {
+    fun configuration_requirements_are_provider_specific() {
         assertTrue(GeminiConfig.isConfigured("", ""))
         assertTrue(GroqConfig.isConfigured("m", ""))
         assertTrue(CustomConfig.isConfigured("m", "https://x"))
         assertFalse(CustomConfig.isConfigured("", "https://x"))
         assertFalse(CustomConfig.isConfigured("m", ""))
         assertFalse(CustomConfig.isConfigured("m", "   "))
+        assertTrue(LocalConfig.isConfigured("/data/model.gguf", ""))
+        assertFalse(LocalConfig.isConfigured("", ""))
+        assertFalse(LocalConfig.isConfigured("   ", ""))
     }
 
     @Test
     fun custom_model_is_trimmed_and_null_safe() {
         assertEquals("gpt-4o", CustomConfig.sanitizeModel("  gpt-4o  "))
         assertEquals("", CustomConfig.sanitizeModel(null))
+    }
+
+    @Test
+    fun local_model_path_is_trimmed_and_null_safe() {
+        assertEquals("/data/model.gguf", LocalConfig.sanitizeModel("  /data/model.gguf  "))
+        assertEquals("", LocalConfig.sanitizeModel(null))
     }
 
     @Test
@@ -84,12 +99,12 @@ class ProviderConfigTest {
             GroqConfig.reasoningParams("openai/gpt-oss-120b")
         )
         assertTrue(GroqConfig.reasoningParams("llama-3.1-8b-instant").isEmpty())
-        // Non-Gemini providers expose no thinking level.
         assertNull(GroqConfig.thinkingLevel("openai/gpt-oss-120b"))
         assertNull(CustomConfig.thinkingLevel("anything"))
-        // Non-Groq providers add no reasoning params.
+        assertNull(LocalConfig.thinkingLevel("anything"))
         assertTrue(GeminiConfig.reasoningParams("x").isEmpty())
         assertTrue(CustomConfig.reasoningParams("x").isEmpty())
+        assertTrue(LocalConfig.reasoningParams("x").isEmpty())
     }
 
     // --- EndpointValidator ---
