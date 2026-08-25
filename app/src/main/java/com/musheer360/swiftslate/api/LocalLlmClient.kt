@@ -14,7 +14,7 @@ import java.io.File
  *
  * The active model is cached in native memory and reloaded only when the model path or
  * inference configuration changes. Access is serialized because one LlamaModel is not
- * thread-safe.
+ * thread-safe. The implementation is intentionally CPU/NEON-first for broad ARM64 support.
  */
 object LocalLlmClient {
     private const val DEFAULT_CONTEXT_SIZE = 2048
