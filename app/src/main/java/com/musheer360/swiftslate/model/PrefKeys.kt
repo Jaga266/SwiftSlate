@@ -5,12 +5,9 @@ package com.musheer360.swiftslate.model
  * provider/model configuration flow. Centralizing these prevents silent
  * breakage from mistyped string literals scattered across UI, service, and
  * client code.
- *
- * Values are unchanged from the literals previously used inline, so existing
- * stored preferences continue to resolve identically.
  */
 object PrefKeys {
-    /** Active provider ("gemini" | "groq" | "custom") — see [ProviderType]. */
+    /** Active provider ("gemini" | "groq" | "custom" | "local") — see [ProviderType]. */
     const val PROVIDER_TYPE = "provider_type"
 
     /** Selected Gemini model id. */
@@ -24,6 +21,21 @@ object PrefKeys {
 
     /** Custom (OpenAI-compatible) endpoint base URL. */
     const val CUSTOM_ENDPOINT = "custom_endpoint"
+
+    /** App-private path to the imported local GGUF model. */
+    const val LOCAL_MODEL_PATH = "local_model_path"
+
+    /** Original display name for the imported local GGUF model. */
+    const val LOCAL_MODEL_NAME = "local_model_name"
+
+    /** llama.cpp context window used for local inference. */
+    const val LOCAL_CONTEXT_SIZE = "local_context_size"
+
+    /** CPU thread count used for local inference. */
+    const val LOCAL_THREADS = "local_threads"
+
+    /** Max output tokens for local inference. */
+    const val LOCAL_MAX_TOKENS = "local_max_tokens"
 
     /** Sampling temperature (Float). */
     const val TEMPERATURE = "temperature"
